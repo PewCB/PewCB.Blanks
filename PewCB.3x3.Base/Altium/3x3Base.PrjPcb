@@ -105,18 +105,6 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=YULEKRQW
 
-[GeneratedDocument1]
-DocumentPath=../AppBlankGerbers\PewCB.3x3Base_Copper_Signal_Top.gbr
-DItemRevisionGUID=
-
-[GeneratedDocument2]
-DocumentPath=../AppBlankGerbers\PewCB.3x3Base_PTH_Drill.gbr
-DItemRevisionGUID=
-
-[GeneratedDocument3]
-DocumentPath=../AppBlankGerbers\PewCB.3x3Base_Soldermask_Top.gbr
-DItemRevisionGUID=
-
 [Configuration1]
 Name=Sources
 ParameterCount=0
