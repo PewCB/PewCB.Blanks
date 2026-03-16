@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "PewCB.Blank")(type "KiCad")(uri "${KIPRJMOD}/PewCB.Blank.pretty")(options "")(descr ""))
+)
