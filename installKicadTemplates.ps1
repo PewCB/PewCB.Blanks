@@ -1,26 +1,37 @@
-# KiCad user templates folder - auto-detected, falls back to hardcoded path
-$hardcodedTemplatesDir = "C:\Users\ruddy\Documents\KiCad\9.0\template"
+# KiCad user templates folders - auto-detected, falls back to hardcoded path
+$hardcodedTemplatesDir = "C:\Users\ruddy\Documents\KiCad\10.0\template"
 
 $kicadDocsBase = Join-Path $env:USERPROFILE "Documents\KiCad"
-$templatesDir = $hardcodedTemplatesDir
+$templatesDirs = @()
 
 if (Test-Path $kicadDocsBase) {
-    $candidate = Get-ChildItem -Path $kicadDocsBase -Directory |
+    $templatesDirs = Get-ChildItem -Path $kicadDocsBase -Directory |
         Where-Object { Test-Path (Join-Path $_.FullName "template") } |
-        Sort-Object Name -Descending |
-        Select-Object -First 1
-
-    if ($candidate) {
-        $templatesDir = Join-Path $candidate.FullName "template"
-    }
+        Sort-Object {
+            $version = $null
+            if ([Version]::TryParse($_.Name, [ref]$version)) {
+                $version
+            }
+            else {
+                [Version]"0.0"
+            }
+        } |
+        ForEach-Object { Join-Path $_.FullName "template" }
 }
 
-Write-Host "KiCad templates folder: $templatesDir"
+if (-not $templatesDirs) {
+    $templatesDirs = @($hardcodedTemplatesDir)
+}
 
-if (-not (Test-Path $templatesDir)) {
-    Write-Error "Templates folder not found: $templatesDir"
+$templatesDirs = $templatesDirs | Where-Object { Test-Path $_ } | Select-Object -Unique
+
+if (-not $templatesDirs) {
+    Write-Error "No KiCad templates folders found under $kicadDocsBase or at fallback path $hardcodedTemplatesDir"
     exit 1
 }
+
+Write-Host "KiCad templates folders detected:"
+$templatesDirs | ForEach-Object { Write-Host " - $_" }
 
 $rootDir = $PSScriptRoot
 
@@ -33,13 +44,15 @@ Get-ChildItem -Path $rootDir -Directory -Filter "PewCB.*" | ForEach-Object {
         return
     }
 
-    $dest = Join-Path $templatesDir $blank.Name
+    foreach ($templatesDir in $templatesDirs) {
+        $dest = Join-Path $templatesDir $blank.Name
 
-    if (Test-Path $dest) {
-        Remove-Item $dest -Recurse -Force
-        Write-Host "[$($blank.Name)] Removed existing template."
+        if (Test-Path $dest) {
+            Remove-Item $dest -Recurse -Force
+            Write-Host "[$($blank.Name)] Removed existing template from $templatesDir"
+        }
+
+        Copy-Item -Path $kicadSrc -Destination $dest -Recurse
+        Write-Host "[$($blank.Name)] Installed to $dest"
     }
-
-    Copy-Item -Path $kicadSrc -Destination $dest -Recurse
-    Write-Host "[$($blank.Name)] Installed to $dest"
 }
